@@ -1,14 +1,23 @@
 import React, { ReactNode } from 'react';
-import * as Realm from 'realm-web';
+import { App, User, Credentials } from 'realm-web';
+import type {} from 'realm-web';
 import config from '../realm.json';
 
 const { baseUrl } = config;
 
 function createRealmApp(id: string) {
-  return new Realm.App({ id, baseUrl });
+  return new App({ id, baseUrl });
 }
 
-const RealmAppContext = React.createContext(null);
+type RealmContextType =
+  | null
+  | (App & {
+      currentUser: User | null;
+      logIn: (credentials: Credentials) => Promise<void>;
+      logOut: () => Promise<void>;
+    });
+
+const RealmAppContext = React.createContext<RealmContextType>(null);
 
 export function RealmAppProvider({
   appId,
@@ -26,7 +35,7 @@ export function RealmAppProvider({
   const [currentUser, setCurrentUser] = React.useState(realmApp.currentUser);
   // Wrap the base logIn function to save the logged in user in state
   const logIn = React.useCallback(
-    async (credentials: Realm.Credentials) => {
+    async (credentials: Credentials) => {
       await realmApp.logIn(credentials);
       setCurrentUser(realmApp.currentUser);
     },
@@ -34,14 +43,21 @@ export function RealmAppProvider({
   );
   // Wrap the current user's logOut function to remove the logged out user from state
   const logOut = React.useCallback(async () => {
-    await currentUser?.logOut();
-    await realmApp.removeUser(currentUser);
-    setCurrentUser(realmApp.currentUser);
+    if (currentUser) {
+      await currentUser.logOut();
+      await realmApp.removeUser(currentUser);
+      setCurrentUser(realmApp.currentUser);
+    }
   }, [realmApp, currentUser]);
 
   // Override the App's currentUser & logIn properties + include the app-level logout function
-  const realmAppContext = React.useMemo(() => {
-    return { ...realmApp, currentUser, logIn, logOut };
+  const realmAppContext: RealmContextType = React.useMemo(() => {
+    return {
+      ...realmApp,
+      currentUser,
+      logIn,
+      logOut,
+    };
   }, [realmApp, currentUser, logIn, logOut]);
 
   return (

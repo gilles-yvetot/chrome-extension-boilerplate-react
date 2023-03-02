@@ -1,10 +1,23 @@
-import React from 'react';
+import React, { FormEvent } from 'react';
 import * as Realm from 'realm-web';
 
 import { useRealmApp } from './RealmApp';
 import { MoreInfoTemplateAndDocs } from './MoreInfo';
 import { toggleBoolean } from '../utils';
 import { useErrorAlert } from '../hooks/useErrorAlert';
+
+type ErrorsType = {
+  email: string | null;
+  password: string | null;
+  other: string | null;
+};
+
+// Authentication errors
+const noErrors: ErrorsType = {
+  email: null,
+  password: null,
+  other: null,
+};
 
 export function WelcomePage() {
   const realmApp = useRealmApp();
@@ -14,13 +27,8 @@ export function WelcomePage() {
     clearErrors();
     setIsSignup(toggleBoolean);
   };
-  // Authentication errors
-  const noErrors = {
-    email: null,
-    password: null,
-    other: null,
-  };
-  const [error, setError] = React.useState(noErrors);
+
+  const [error, setError] = React.useState<ErrorsType>(noErrors);
   const clearErrors = () => setError(noErrors);
   const NonAuthErrorAlert = useErrorAlert({
     error: error.other,
@@ -55,29 +63,21 @@ export function WelcomePage() {
       <div className="auth-card">
         <form
           className="auth-form"
-          onSubmit={(e) => {
+          onSubmit={(e: FormEvent<HTMLFormElement>) => {
             e.preventDefault();
-            const formData = new FormData(e.target);
+            const formData = new FormData(e.target as HTMLFormElement);
             const { email, password } = Object.fromEntries(formData.entries());
             onFormSubmit({ email: String(email), password: String(password) });
           }}
         >
           <h2>{isSignup ? 'Sign Up' : 'Log In'}</h2>
           <NonAuthErrorAlert />
-          <input
-            id="input-email"
-            name="email"
-            placeholder="Email Address"
-            error={Boolean(error.email)}
-            helperText={error.email ?? ''}
-          />
+          <input id="input-email" name="email" placeholder="Email Address" />
           <input
             id="input-password"
             type={showPassword ? 'text' : 'password'}
             name="password"
             placeholder="Password"
-            error={Boolean(error.password)}
-            helperText={error.password ?? ''}
           />
           <button
             aria-label="toggle password visibility"
@@ -108,9 +108,12 @@ export function WelcomePage() {
   );
 }
 
-function handleAuthenticationError(err, setError) {
+function handleAuthenticationError(
+  err: Error,
+  setError: React.Dispatch<React.SetStateAction<ErrorsType>>
+) {
   const handleUnknownError = () => {
-    setError((prevError) => ({
+    setError((prevError: ErrorsType) => ({
       ...prevError,
       other: 'Something went wrong. Try again in a little bit.',
     }));
@@ -124,7 +127,7 @@ function handleAuthenticationError(err, setError) {
     const errorType = error || statusCode;
     switch (errorType) {
       case 'invalid username':
-        setError((prevError) => ({
+        setError((prevError: ErrorsType) => ({
           ...prevError,
           email: 'Invalid email address.',
         }));
@@ -132,21 +135,21 @@ function handleAuthenticationError(err, setError) {
       case 'invalid username/password':
       case 'invalid password':
       case 401:
-        setError((prevError) => ({
+        setError((prevError: ErrorsType) => ({
           ...prevError,
           password: 'Incorrect password.',
         }));
         break;
       case 'name already in use':
       case 409:
-        setError((prevError) => ({
+        setError((prevError: ErrorsType) => ({
           ...prevError,
           email: 'Email is already registered.',
         }));
         break;
       case 'password must be between 6 and 128 characters':
       case 400:
-        setError((prevError) => ({
+        setError((prevError: ErrorsType) => ({
           ...prevError,
           password: 'Password must be between 6 and 128 characters.',
         }));

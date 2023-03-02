@@ -1,6 +1,6 @@
 import React from 'react';
 
-function Alert(props) {
+function Alert(props: any) {
   return <div {...props} />;
 }
 
@@ -10,9 +10,9 @@ export function ErrorAlert({
   onClose = () => {},
 }: {
   isOpen: boolean;
-  message: string;
+  message: string | null;
   onClose: () => void;
-}) {
+}) { 
   return isOpen ? (
     <Alert onClose={onClose} severity="error">
       {message}
@@ -25,9 +25,9 @@ export function useErrorAlert({
   clearError,
   hideAfterMs,
 }: {
-  error: boolean;
+  error: string | null;
   clearError: () => void;
-  hideAfterMs: number;
+  hideAfterMs?: number;
 }) {
   const [showErrorAlert, setShowErrorAlert] = React.useState(false);
   const clearErrorAlert = React.useCallback(() => {
