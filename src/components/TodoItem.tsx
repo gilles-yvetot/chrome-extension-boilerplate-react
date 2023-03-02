@@ -1,6 +1,13 @@
 import React from 'react';
+import { ToDo, ToDoActions } from '../hooks/useTodos';
 
-export function TodoItem({ todo, todoActions }) {
+export function TodoItem({
+  todo,
+  todoActions,
+}: {
+  todo: ToDo;
+  todoActions: ToDoActions;
+}) {
   return (
     <li>
       <input

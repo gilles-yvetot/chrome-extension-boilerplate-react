@@ -3,7 +3,14 @@ import React from 'react';
 // By default we won't do anything for a change event unless the caller passed in a change handler
 // for the change event type.
 const noop = () => {};
-const defaultChangeHandlers = {
+
+type Handlers = {
+  onInsert: (evt: Realm.Services.MongoDB.InsertEvent<any>) => void;
+  onUpdate: (evt: Realm.Services.MongoDB.UpdateEvent<any>) => void;
+  onReplace: (evt: Realm.Services.MongoDB.ReplaceEvent<any>) => void;
+  onDelete: (evt: Realm.Services.MongoDB.DeleteEvent<any>) => void;
+};
+const defaultChangeHandlers: Handlers = {
   onInsert: noop,
   onUpdate: noop,
   onReplace: noop,
@@ -19,7 +26,10 @@ const defaultChangeHandlers = {
  * @param {(change: Realm.Services.MongoDB.ReplaceEvent<T>) => void} [changeHandlers.onReplace] - A change handler callback that receives a Replace event.
  * @param {(change: Realm.Services.MongoDB.DeleteEvent<T>) => void} [changeHandlers.onDelete] - A change handler callback that receives a Delete event.
  */
-export function useWatch(collection, changeHandlers) {
+export function useWatch(
+  collection: Realm.Services.MongoDB.MongoDBCollection<any>,
+  changeHandlers: Handlers
+) {
   const filter = React.useMemo(() => ({}), []);
   const handlers = { ...defaultChangeHandlers, ...changeHandlers };
   // We copy the handlers into a ref so that we can always call the latest version of each handler

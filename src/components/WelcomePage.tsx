@@ -50,10 +50,10 @@ export function WelcomePage() {
     clearErrors();
     try {
       if (isSignup) {
-        await realmApp.emailPasswordAuth.registerUser(email, password);
+        await realmApp.emailPasswordAuth.registerUser({ email, password });
       }
       await realmApp.logIn(Realm.Credentials.emailPassword(email, password));
-    } catch (err) {
+    } catch (err: any) {
       handleAuthenticationError(err, setError);
     }
   };
@@ -109,7 +109,7 @@ export function WelcomePage() {
 }
 
 function handleAuthenticationError(
-  err: Error,
+  err: any,
   setError: React.Dispatch<React.SetStateAction<ErrorsType>>
 ) {
   const handleUnknownError = () => {

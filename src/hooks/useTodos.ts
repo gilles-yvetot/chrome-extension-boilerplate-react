@@ -12,11 +12,27 @@ import {
 } from '../utils';
 
 const { dataSourceName } = config;
+export interface ToDo extends Realm.Services.MongoDB.Document {
+  summary?: string;
+  _partition?: string;
+  isComplete?: boolean;
+}
 
-export function useTodos() {
+export type ToDoActions = {
+  saveTodo: (draft: ToDo) => void;
+  toggleTodo: (toDo: ToDo) => void;
+  deleteTodo: (toDo: ToDo) => void;
+};
+
+type ReturnType = ToDoActions & {
+  loading: boolean;
+  todos: ToDo[];
+};
+
+export function useTodos(): ReturnType {
   // Set up a list of todos in state
-  const realmApp = useRealmApp();
-  const [todos, setTodos] = React.useState([]);
+  const { currentUser } = useRealmApp();
+  const [todos, setTodos] = React.useState<ToDo[]>([]);
   const [loading, setLoading] = React.useState(true);
 
   // Get a client object for the todo task collection
@@ -28,14 +44,14 @@ export function useTodos() {
 
   // Fetch all todos on load and whenever our collection changes (e.g. if the current user changes)
   React.useEffect(() => {
-    taskCollection.find({}).then((fetchedTodos) => {
+    taskCollection?.find({}).then((fetchedTodos) => {
       setTodos(fetchedTodos);
       setLoading(false);
     });
   }, [taskCollection]);
 
   // Use a MongoDB change stream to reactively update state when operations succeed
-  useWatch(taskCollection, {
+  useWatch(taskCollection!, {
     onInsert: (change) => {
       setTodos((oldTodos) => {
         if (loading) {
@@ -86,12 +102,12 @@ export function useTodos() {
   });
 
   // Given a draft todo, format it and then insert it
-  const saveTodo = async (draftTodo) => {
+  const saveTodo = async (draftTodo: ToDo) => {
     if (draftTodo.summary) {
-      draftTodo._partition = realmApp.currentUser.id;
+      draftTodo._partition = currentUser?.id;
       try {
-        await taskCollection.insertOne(draftTodo);
-      } catch (err) {
+        await taskCollection?.insertOne(draftTodo);
+      } catch (err: any) {
         if (err.error.match(/^Duplicate key error/)) {
           console.warn(
             `The following error means that we tried to insert a todo multiple times (i.e. an existing todo has the same _id). In this app we just catch the error and move on. In your app, you might want to debounce the save input or implement an additional loading state to avoid sending the request in the first place.`
@@ -103,16 +119,16 @@ export function useTodos() {
   };
 
   // Toggle whether or not a given todo is complete
-  const toggleTodo = async (todo) => {
-    await taskCollection.updateOne(
+  const toggleTodo = async (todo: ToDo) => {
+    await taskCollection?.updateOne(
       { _id: todo._id },
       { $set: { isComplete: !todo.isComplete } }
     );
   };
 
   // Delete a given todo
-  const deleteTodo = async (todo) => {
-    await taskCollection.deleteOne({ _id: todo._id });
+  const deleteTodo = async (todo: ToDo) => {
+    await taskCollection?.deleteOne({ _id: todo._id });
   };
 
   return {
