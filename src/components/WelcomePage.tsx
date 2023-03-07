@@ -2,7 +2,6 @@ import React, { FormEvent } from 'react';
 import * as Realm from 'realm-web';
 
 import { useRealmApp } from './RealmApp';
-import { MoreInfoTemplateAndDocs } from './MoreInfo';
 import { toggleBoolean } from '../utils';
 import { useErrorAlert } from '../hooks/useErrorAlert';
 
@@ -103,7 +102,6 @@ export function WelcomePage() {
           </button>
         </form>
       </div>
-      <MoreInfoTemplateAndDocs />
     </div>
   );
 }

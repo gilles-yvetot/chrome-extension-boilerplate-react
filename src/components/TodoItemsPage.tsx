@@ -5,7 +5,6 @@ import { TodoItem } from './TodoItem';
 import { useDraftTodos } from '../hooks/useDraftTodos';
 import { DraftTodoItem } from './DraftTodoItem';
 import { useShowLoader } from '../hooks/util-hooks';
-import { MoreInfo } from './MoreInfo';
 
 export function TodoItemsPage() {
   const { loading, todos, ...todoActions } = useTodos();
@@ -49,7 +48,6 @@ export function TodoItemsPage() {
           </li>
         </div>
       )}
-      <MoreInfo />
     </div>
   );
 }
