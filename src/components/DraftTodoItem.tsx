@@ -1,6 +1,14 @@
 import React from 'react';
+import { ToDo, ToDoActions } from '../hooks/useTodos';
+import { DraftActions } from '../hooks/useDraftTodos';
 
-export function DraftTodoItem({ todo, todoActions, draftTodoActions }) {
+type Props = {
+  todo: ToDo;
+  todoActions: ToDoActions;
+  draftTodoActions: DraftActions;
+};
+
+export function DraftTodoItem({ todo, todoActions, draftTodoActions }: Props) {
   return (
     <li>
       <input

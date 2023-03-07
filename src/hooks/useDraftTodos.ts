@@ -2,7 +2,13 @@ import React from 'react';
 import * as Realm from 'realm-web';
 import { ToDo } from './useTodos';
 
-export function useDraftTodos() {
+export type DraftActions = {
+  createDraftTodo: () => void;
+  setDraftTodoSummary: (draft: ToDo, summary: string) => void;
+  deleteDraftTodo: (draft: ToDo) => void;
+};
+
+export function useDraftTodos(): DraftActions & { draftTodos: ToDo[] } {
   const [drafts, setDrafts] = React.useState<ToDo[]>([]);
 
   const createDraftTodo = () => {
