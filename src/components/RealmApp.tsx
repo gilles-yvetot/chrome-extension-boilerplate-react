@@ -1,6 +1,5 @@
 import React, { ReactNode } from 'react';
 import { App, User, Credentials } from 'realm-web';
-import type {} from 'realm-web';
 import config from '../realm.json';
 
 const { baseUrl } = config;

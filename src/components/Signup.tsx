@@ -4,6 +4,8 @@ import * as Realm from 'realm-web';
 import { useRealmApp } from './RealmApp';
 import { toggleBoolean } from '../utils';
 import { useErrorAlert } from '../hooks/useErrorAlert';
+import { useNavigate } from 'react-router-dom';
+import { handleAuthenticationError } from './Login';
 
 type ErrorsType = {
   email: string | null;
@@ -18,13 +20,13 @@ const noErrors: ErrorsType = {
   other: null,
 };
 
-export function WelcomePage() {
+export default function Signup() {
   const realmApp = useRealmApp();
+  const navigate = useNavigate();
   // Track whether the user is logging in or signing up for a new account
-  const [isSignup, setIsSignup] = React.useState(false);
-  const toggleIsSignup = () => {
+  const goToLogin = () => {
     clearErrors();
-    setIsSignup(toggleBoolean);
+    navigate('/login');
   };
 
   const [error, setError] = React.useState<ErrorsType>(noErrors);
@@ -48,10 +50,9 @@ export function WelcomePage() {
   }) => {
     clearErrors();
     try {
-      if (isSignup) {
-        await realmApp.emailPasswordAuth.registerUser({ email, password });
-      }
+      await realmApp.emailPasswordAuth.registerUser({ email, password });
       await realmApp.logIn(Realm.Credentials.emailPassword(email, password));
+      navigate('/');
     } catch (err: any) {
       handleAuthenticationError(err, setError);
     }
@@ -69,7 +70,7 @@ export function WelcomePage() {
             onFormSubmit({ email: String(email), password: String(password) });
           }}
         >
-          <h2>{isSignup ? 'Sign Up' : 'Log In'}</h2>
+          <h2>Sign Up</h2>
           <NonAuthErrorAlert />
           <input id="input-email" name="email" placeholder="Email Address" />
           <input
@@ -89,74 +90,13 @@ export function WelcomePage() {
           </button>
 
           <button type="submit" color="primary">
-            {isSignup ? 'Create Account' : 'Log In'}
+            Create Account
           </button>
-          <button
-            type="button"
-            className="link-button"
-            onClick={() => toggleIsSignup()}
-          >
-            {isSignup
-              ? 'Already have an account? Log In'
-              : 'Sign up for an account'}
+          <button type="button" className="link-button" onClick={goToLogin}>
+            Already have an account? Log In
           </button>
         </form>
       </div>
     </div>
   );
-}
-
-function handleAuthenticationError(
-  err: any,
-  setError: React.Dispatch<React.SetStateAction<ErrorsType>>
-) {
-  const handleUnknownError = () => {
-    setError((prevError: ErrorsType) => ({
-      ...prevError,
-      other: 'Something went wrong. Try again in a little bit.',
-    }));
-    console.warn(
-      'Something went wrong with a Realm login or signup request. See the following error for details.'
-    );
-    console.error(err);
-  };
-  if (err instanceof Realm.MongoDBRealmError) {
-    const { error, statusCode } = err;
-    const errorType = error || statusCode;
-    switch (errorType) {
-      case 'invalid username':
-        setError((prevError: ErrorsType) => ({
-          ...prevError,
-          email: 'Invalid email address.',
-        }));
-        break;
-      case 'invalid username/password':
-      case 'invalid password':
-      case 401:
-        setError((prevError: ErrorsType) => ({
-          ...prevError,
-          password: 'Incorrect password.',
-        }));
-        break;
-      case 'name already in use':
-      case 409:
-        setError((prevError: ErrorsType) => ({
-          ...prevError,
-          email: 'Email is already registered.',
-        }));
-        break;
-      case 'password must be between 6 and 128 characters':
-      case 400:
-        setError((prevError: ErrorsType) => ({
-          ...prevError,
-          password: 'Password must be between 6 and 128 characters.',
-        }));
-        break;
-      default:
-        handleUnknownError();
-        break;
-    }
-  } else {
-    handleUnknownError();
-  }
 }

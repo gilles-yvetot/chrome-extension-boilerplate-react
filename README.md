@@ -145,6 +145,7 @@ ApiCall({ key: secrets.key });
 - [Webpack documentation](https://webpack.js.org/concepts/)
 - [Chrome Extension documentation](https://developer.chrome.com/extensions/getstarted)
 
----
+TODO:
 
-Michael Xieyang Liu | [Website](https://lxieyang.github.io)
+- implement react router
+- integrate stripe elements
